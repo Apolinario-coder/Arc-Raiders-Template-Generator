@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arc Raiders - Gerador de Template de Vendas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .editor-panel {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .editor-panel h1 {
+            color: white;
+            font-size: 1.875rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .editor-controls {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .generate-btn {
+            background: rgba(15, 23, 42, 0.5);
+            color: white;
+            border: 1px solid #475569;
+            border-radius: 0.375rem;
+            padding: 0.75rem 1.4rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .generate-btn:hover {
+            background: #0e7490;
+            transform: translateY(-2px);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .input-name {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #475569;
+            border-radius: 0.375rem;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-size: 1.25rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .input-name:focus {
+            outline: none;
+            border-color: #06b6d4;
+        }
+
+        .input-name::placeholder {
+            color: #64748b;
+        }
+
+        select {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #475569;
+            border-radius: 0.375rem;
+            padding: 0.75rem 1rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #06b6d4;
+        }
+                
+        .template{ position: relative; }
+
+        #glslPreview{
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          border-radius: inherit;
+          display: block;        
+          z-index: 50;
+          opacity: 0.90;         
+        }
+
+        .template {
+        background: #0a0e1a;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        border: 2px solid #334155;
+       }
+
+        .template-header{
+          display: grid;
+          grid-template-columns: 220px 1fr 1px; 
+          align-items: center;
+          position: relative;
+          margin-bottom: 2rem;
+        }
+
+        .logo {
+            width: 220px;         
+            height: auto;
+            display: flex;
+            align-items: center;
+        }
+
+       .logo img{
+        width: 100%;
+        height: auto;         
+        object-fit: contain;
+        transform: none;      
+        display: block;
+        }
+
+        .shop-name {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 1.875rem;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .stock-header {
+            color: white;
+            font-size: 1.25rem;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+
+        .item-slot {
+            aspect-ratio: 1;
+            background: rgba(15, 23, 42, 0.5);
+            border: 2px solid #334155;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .item-slot:hover {
+            border-color: #06b6d4;
+        }
+
+        .item-slot.empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+        }
+
+        .item-slot.empty:hover {
+            color: #06b6d4;
+        }
+
+        .item-slot.empty svg {
+            width: 2rem;
+            height: 2rem;
+            margin-bottom: 0.5rem;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .item-slot.empty span {
+            font-size: 0.75rem;
+        }
+
+        .item-slot{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        }
+        
+        .item-slot img{
+        width: auto;
+        height: auto;
+        max-width: calc(100% - 1rem);
+        max-height: calc(100% - 1rem);
+        object-fit: initial; /* pode remover também */
+        display: block;
+        }
+
+        .item-slot.blueprint {
+            background-image: url('background.webp');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .item-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding: 0.5rem;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            z-index: 10 !important;
+            text-align: center;
+        }
+
+        .item-quantity {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #0891b2;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            z-index: 10 !important;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .item-quantity:hover {
+            background: #0e7490;
+        }
+
+        .item-price {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            background: #16a34a;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 0.25rem 0.4rem;
+            border-radius: 0.25rem;
+            z-index: 10 !important;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .item-price:hover {
+            background: #15803d;
+        }
+
+        .remove-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(220, 38, 38, 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 5;
+        }
+
+        .item-slot:hover .remove-overlay {
+            background: rgba(220, 38, 38, 0.2);
+            opacity: 1;
+        }
+
+        .remove-overlay svg {
+            width: 2rem;
+            height: 2rem;
+            color: white;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 0.5rem;
+            max-width: 64rem;
+            width: 100%;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 1rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .modal-header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .modal-header h3 {
+            color: white;
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: white;
+        }
+
+        .close-btn svg {
+            width: 1.5rem;
+            height: 1.5rem;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            width: 1.25rem;
+            height: 1.25rem;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .search-input {
+            width: 100%;
+            background: #1e293b;
+            border: 1px solid #475569;
+            border-radius: 0.375rem;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            color: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #06b6d4;
+        }
+
+        .modal-body {
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .items-catalog {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+
+        .catalog-item {
+            background: rgba(30, 41, 59, 0.5);
+            border: 2px solid #334155;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .catalog-item:hover {
+            border-color: #06b6d4;
+        }
+
+        .catalog-item-img {
+            aspect-ratio: 1;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 0.375rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .catalog-item-img img{
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: 100%;
+        display: block;
+        }
+
+        .catalog-item-name {
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .catalog-item:hover .catalog-item-name {
+            color: #22d3ee;
+        }
+
+        .help-text {
+            margin-top: 1.5rem;
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        .help-text strong {
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+
+        .quantity-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 1rem;
+        }
+
+        .quantity-modal.active {
+            display: flex;
+        }
+
+        .quantity-modal-content {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .quantity-modal h3 {
+            color: white;
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .quantity-modal p {
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+        }
+
+        .quantity-input-field {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #475569;
+            border-radius: 0.375rem;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .quantity-input-field:focus {
+            outline: none;
+            border-color: #06b6d4;
+        }
+
+        .price-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .price-group input {
+            flex: 2;
+        }
+
+        .price-group select {
+            flex: 1;
+            min-width: 5rem;
+        }
+
+        .blueprint-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: white;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .blueprint-checkbox input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            cursor: pointer;
+            accent-color: #0891b2;
+        }
+
+        .blueprint-checkbox label {
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .quantity-modal-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .quantity-btn {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quantity-btn-confirm {
+            background: #0891b2;
+            color: white;
+        }
+
+        .quantity-btn-confirm:hover {
+            background: #0e7490;
+        }
+
+        .quantity-btn-cancel {
+            background: rgba(30, 41, 59, 0.5);
+            color: white;
+            border: 1px solid #475569;
+        }
+
+        .quantity-btn-cancel:hover {
+            background: rgba(30, 41, 59, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="editor-panel">
+            <h1>Arc Raiders - Gerador de Template de Vendas</h1>
+            <div class="editor-controls">
+                <input type="text" id="shopName" class="input-name" placeholder="NOME DA SUA LOJA..." value="LOJA DO JOGADOR">
+                <select id="language">
+                    <option value="pt">Português</option>
+                    <option value="en">English</option>
+                </select>
+                <button class="generate-btn" onclick="generateImage()">📸 Gerar Imagem</button>
+            </div>
+        </div>
+
+        <div class="template">
+            <canvas id="glslPreview"></canvas>
+            <div class="template-header">
+                <div class="logo">
+                    <img src="logo.png" alt="Arc Raiders Logo">
+                </div>
+                <div>
+                    <div class="shop-name" id="displayShopName">LOJA DO JOGADOR</div>
+                </div>
+                <div></div>
+            </div>
+
+            <div id="stockArea">
+    <h3 class="stock-header" id="stockHeader">ESTOQUE 0/20</h3>
+    <div class="items-grid" id="itemsGrid"></div>
+</div>
+        </div>
+
+        <div class="help-text">
+            <strong>Como usar:</strong> Clique nos slots vazios para adicionar itens do catálogo. 
+            Clique em um item já adicionado para removê-lo. Clique no botão "Gerar Imagem" para baixar seu estoque como PNG!
+        </div>
+    </div>
+
+    <div class="modal" id="itemModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-header-top">
+                    <h3>SELECIONAR ITEM</h3>
+                    <button class="close-btn" onclick="closeModal()">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="search-box">
+                    <svg class="search-icon" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Buscar item...">
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="items-catalog" id="itemsCatalog"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="quantity-modal" id="quantityModal">
+        <div class="quantity-modal-content">
+            <h3>Configurar Item</h3>
+            <p id="quantityItemName"></p>
+            
+            <input type="text" id="quantityInput" class="quantity-input-field" placeholder="Quantidade (opcional)">
+            
+            <div class="price-group">
+                <input type="text" id="priceInput" class="quantity-input-field" placeholder="Preço (opcional)" style="margin-bottom: 0;">
+                <select id="currencySelect" class="quantity-input-field" style="margin-bottom: 0;">
+                    <option value="BRL">BRL</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                </select>
+            </div>
+            
+            <div class="blueprint-checkbox">
+                <input type="checkbox" id="blueprintCheckbox">
+                <label for="blueprintCheckbox">Blueprint</label>
+            </div>
+            
+            <div class="quantity-modal-buttons">
+                <button class="quantity-btn quantity-btn-cancel" onclick="cancelQuantity()">Cancelar</button>
+                <button class="quantity-btn quantity-btn-confirm" onclick="confirmQuantity()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+  const ITEMS_DATA = [
+    { en: "Bettina Blueprint", pt: "Esquema de Bettina" },
+    { en: "Blue Light Stick Blueprint", pt: "Esquema de Bastão Luminoso Azul" },
+    { en: "Red Light Stick Blueprint", pt: "Esquema de Bastão de Luminoso Vermelho" },
+    { en: "Green Light Stick Blueprint", pt: "Esquema de Bastão de Luminoso Verde" },
+    { en: "Yellow Light Stick Blueprint", pt: "Esquema de Bastão de Luminoso Amarelo" },
+    { en: "Aphelion Blueprint", pt: "Esquema de Aphelion" },
+    { en: "Jupiter Blueprint", pt: "Esquema de Jupiter" },
+    { en: "Equalizer Blueprint", pt: "Esquema de Equalizador" },
+    { en: "Showstopper Blueprint", pt: "Esquema de Para-Tudo" },
+    { en: "Wolfpack Blueprint", pt: "Esquema de Matilha de Lobos" },
+    { en: "Deadline Blueprint", pt: "Esquema de Prazo" },
+    { en: "Trailblazer Blueprint", pt: "Esquema de Trailblazer" },
+    { en: "Venator Blueprint", pt: "Esquema de Venator" },
+    { en: "Il Toro Blueprint", pt: "Esquema de Il Toro" },
+    { en: "Vulcano Blueprint", pt: "Esquema de Vulcano" },
+    { en: "Tempest Blueprint", pt: "Esquema de Tempest" },
+    { en: "Bobcat Blueprint", pt: "Esquema de Bobcat" },
+    { en: "Osprey Blueprint", pt: "Esquema de Osprey" },
+    { en: "Burletta Blueprint", pt: "Esquema de Burletta" },
+    { en: "Hullcracker Blueprint", pt: "Esquema de Quebra-Casco" },
+    { en: "Anvil Blueprint", pt: "Esquema de Bigorna" },
+    { en: "Torrente Blueprint", pt: "Esquema de Torrente" },
+    { en: "Combat Mk. 3 (Flanking) Blueprint", pt: "Esquema de Combate Mk. 3 (Flanqueador)" },
+    { en: "Combat Mk. 3 (Aggressive) Blueprint", pt: "Esquema de Combate Mk. 3 (Agressivo)" },
+    { en: "Tactical Mk. 3 (Defensive) Blueprint", pt: "Esquema de Tático Mk. 3 (Defensivo)" },
+    { en: "Tactical Mk. 3 (Healing) Blueprint", pt: "Esquema de Tático Mk. 3 (Cura)" },
+    { en: "Looting Mk. 3 (Survivor) Blueprint", pt: "Esquema de Saque Mk. 3 (Sobrevivente)" },
+    { en: "Gas Mine Blueprint", pt: "Esquema de Mina de Gás" },
+    { en: "Pulse Mine Blueprint", pt: "Esquema de Mina de Pulso" },
+    { en: "Jolt Mine Blueprint", pt: "Esquema de Mina de Choque" },
+    { en: "Explosive Mine Blueprint", pt: "Esquema de Mina Explosiva" },
+    { en: "Blaze Grenade Blueprint", pt: "Esquema de Granada Incendiária" },
+    { en: "Seeker Grenade Blueprint", pt: "Esquema de Granada Rastreadora" },
+    { en: "Lure Grenade Blueprint", pt: "Esquema de Granada de Isca" },
+    { en: "Tagging Grenade Blueprint", pt: "Esquema de Granada de Marcação" },
+    { en: "Smoke Grenade Blueprint", pt: "Esquema de Granada de Fumaça" },
+    { en: "Trigger Nade Blueprint", pt: "Esquema de Granada de Detonação" },
+    { en: "Fireworks Box Blueprint", pt: "Esquema de Caixa de Fogos de Artifício" },
+    { en: "Remote Raider Flare Blueprint", pt: "Esquema de Sinalizador Remoto de Raider" },
+    { en: "Barricade Kit Blueprint", pt: "Esquema de Kit de Barricada" },
+    { en: "Snap Hook Blueprint", pt: "Esquema de Mosquetão" },
+    { en: "Defibrillator Blueprint", pt: "Esquema de Desfibrilador" },
+    { en: "Vita Shot Blueprint", pt: "Esquema de Injeção Vita" },
+    { en: "Vita Spray Blueprint", pt: "Esquema de Spray Vita" },
+    { en: "Light Gun Parts Blueprint", pt: "Esquema de Peças de Arma Leve" },
+    { en: "Medium Gun Parts Blueprint", pt: "Esquema de Peças de Arma Média" },
+    { en: "Heavy Gun Parts Blueprint", pt: "Esquema de Peças de Arma Pesada" },
+    { en: "Complex Gun Parts Blueprint", pt: "Esquema de Peças de Arma Complexas" },
+    { en: "Angled Grip II Blueprint", pt: "Esquema de Empunhadura Angular II" },
+    { en: "Angled Grip III Blueprint", pt: "Esquema de Empunhadura Angular III" },
+    { en: "Vertical Grip II Blueprint", pt: "Esquema de Empunhadura Vertical II" },
+    { en: "Vertical Grip III Blueprint", pt: "Esquema de Empunhadura Vertical III" },
+    { en: "Lightweight Stock Blueprint", pt: "Esquema de Coronha Leve" },
+    { en: "Padded Stock Blueprint", pt: "Esquema de Coronha com Almofada" },
+    { en: "Stable Stock II Blueprint", pt: "Esquema de Coronha Estável II" },
+    { en: "Stable Stock III Blueprint", pt: "Esquema de Coronha Estável III" },
+    { en: "Extended Barrel Blueprint", pt: "Esquema de Cano Estendido" },
+    { en: "Compensator II Blueprint", pt: "Esquema de Compensador II" },
+    { en: "Compensator III Blueprint", pt: "Esquema de Compensador III" },
+    { en: "Muzzle Brake II Blueprint", pt: "Esquema de Freio de Boca II" },
+    { en: "Muzzle Brake III Blueprint", pt: "Esquema de Freio de Boca III" },
+    { en: "Silencer I Blueprint", pt: "Esquema de Silenciador I" },
+    { en: "Silencer II Blueprint", pt: "Esquema de Silenciador II" },
+    { en: "Shotgun Silencer Blueprint", pt: "Esquema de Silenciador de Escopeta" },
+    { en: "Shotgun Choke II Blueprint", pt: "Esquema de Choque de Escopeta II" },
+    { en: "Shotgun Choke III Blueprint", pt: "Esquema de Choque de Escopeta III" },
+    { en: "Extended Light Mag II Blueprint", pt: "Esquema de Carregador Leve Estendido II" },
+    { en: "Extended Light Mag III Blueprint", pt: "Esquema de Carregador Leve Estendido III" },
+    { en: "Extended Medium Mag II Blueprint", pt: "Esquema de Carregador Médio Estendido II" },
+    { en: "Extended Medium Mag III Blueprint", pt: "Esquema de Carregador Médio Estendido III" },
+    { en: "Extended Shotgun Mag II Blueprint", pt: "Esquema de Carregador de Escopeta Estendido II" },
+    { en: "Extended Shotgun Mag III Blueprint", pt: "Esquema de Carregador de Escopeta Estendido III" }
+        ];
+
+        let items = Array(20).fill(null);
+        let selectedSlot = null;
+        let currentLanguage = 'pt';
+        let pendingItem = null;
+        let editingSlot = null;
+
+        function init() {
+            renderItems();
+            syncGLSLPreviewSize();
+            document.getElementById('shopName').addEventListener('input', updateShopName);
+            document.getElementById('language').addEventListener('change', updateLanguage);
+            document.getElementById('searchInput').addEventListener('input', filterCatalog);
+            document.getElementById('quantityInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') confirmQuantity();
+            });
+        }
+
+        function getItemDisplayName(item) {
+            let name = item[currentLanguage];
+            if (currentLanguage === 'pt') {
+                name = name.replace(/^Esquema de /i, '');
+            } else {
+                name = name.replace(/ Blueprint$/i, '');
+            }
+            return name;
+        }
+
+        function getItemFullName(itemData, isBlueprint) {
+            let name = itemData[currentLanguage];
+            if (isBlueprint) {
+                return name;
+            } else {
+                if (currentLanguage === 'pt') {
+                    return name.replace(/^Esquema de /i, '');
+                } else {
+                    return name.replace(/ Blueprint$/i, '');
+                }
+            }
+        }
+
+        function updateShopName(e) {
+            const name = e.target.value.toUpperCase();
+            e.target.value = name;
+            document.getElementById('displayShopName').textContent = name || 'LOJA DO JOGADOR';
+        }
+
+        function updateLanguage(e) {
+            currentLanguage = e.target.value;
+            renderItems();
+            filterCatalog();
+        }
+    
+        function syncGLSLPreviewSize(){
+          const template = document.querySelector('.template');
+          const canvas = document.getElementById('glslPreview');
+          if (!template || !canvas) return;
+
+          const r = template.getBoundingClientRect();
+          const dpr = window.devicePixelRatio || 1;
+
+          canvas.style.width = r.width + "px";
+          canvas.style.height = r.height + "px";
+          canvas.width = Math.round(r.width * dpr);
+          canvas.height = Math.round(r.height * dpr);
+        }
+        window.addEventListener("resize", () => requestAnimationFrame(syncGLSLPreviewSize));
+
+        function renderItems() {
+            const grid = document.getElementById('itemsGrid');
+            grid.innerHTML = '';
+            
+            items.forEach((item, index) => {
+                const slot = document.createElement('div');
+                slot.className = 'item-slot';
+                if (item && item.isBlueprint) {
+                    slot.classList.add('blueprint');
+                }
+                
+                if (item) {
+                    const priceHTML = item.price ? `<div class="item-price">${item.currency} ${item.price}</div>` : '';
+                    const quantityHTML = item.quantity ? `<div class="item-quantity">${item.quantity}</div>` : '';
+                    
+                    slot.innerHTML = `
+                        <img src="${item.imagePath}" alt="${item.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect width=%22100%22 height=%22100%22 fill=%22%23334155%22/><text x=%2250%22 y=%2250%22 font-size=%2212%22 text-anchor=%22middle%22 fill=%22%23fff%22>?</text></svg>'">
+                        <div class="item-name">${item.name}</div>
+                        ${priceHTML}
+                        ${quantityHTML}
+                        <div class="remove-overlay">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </div>
+                    `;
+                    
+                    // Adicionar evento de clique para editar quantidade ou preço
+                    const quantityEl = slot.querySelector('.item-quantity');
+                    const priceEl = slot.querySelector('.item-price');
+                    
+                    if (quantityEl) {
+                        quantityEl.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            editItem(index);
+                        });
+                    }
+                    
+                    if (priceEl) {
+                        priceEl.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            editItem(index);
+                        });
+                    }
+                    
+                    slot.addEventListener('click', () => removeItem(index));
+                } else {
+                    slot.classList.add('empty');
+                    slot.innerHTML = `
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 4v16m8-8H4"/>
+                        </svg>
+                        <span>Adicionar</span>
+                    `;
+                    slot.addEventListener('click', () => openModal(index));
+                }
+                
+                grid.appendChild(slot);
+            });
+
+            updateStockCount();
+            requestAnimationFrame(syncGLSLPreviewSize);
+        }
+
+        function updateStockCount() {
+            const count = items.filter(item => item !== null).length;
+            document.getElementById('stockHeader').textContent = `ESTOQUE ${count}/20`;
+        }
+
+        function removeItem(index) {
+            items[index] = null;
+            renderItems();
+        }
+
+        function editItem(index) {
+            editingSlot = index;
+            const item = items[index];
+            pendingItem = item.originalItem;
+            
+            document.getElementById('quantityItemName').textContent = item.name;
+            document.getElementById('quantityInput').value = item.quantity || '';
+            document.getElementById('priceInput').value = item.price || '';
+            document.getElementById('currencySelect').value = item.currency || 'BRL';
+            document.getElementById('blueprintCheckbox').checked = item.isBlueprint || false;
+            
+            selectedSlot = index;
+            document.getElementById('quantityModal').classList.add('active');
+            setTimeout(() => document.getElementById('quantityInput').focus(), 100);
+        }
+
+        function openModal(index) {
+            selectedSlot = index;
+            editingSlot = null;
+            document.getElementById('itemModal').classList.add('active');
+            document.getElementById('searchInput').value = '';
+            filterCatalog();
+            setTimeout(() => document.getElementById('searchInput').focus(), 100);
+        }
+
+        function closeModal() {
+            document.getElementById('itemModal').classList.remove('active');
+        }
+        
+        function getThumbPath(enName) {
+            return (
+                "thumbs/" +
+                enName
+                    .replace(/ Blueprint$/i, "")
+                    .trim()
+                    .replace(/\s+/g, "_")
+                    .replace(/\(/g, "%2528")
+                    .replace(/\)/g, "%2529")
+                    + ".webp"
+            );
+        }
+        
+        function filterCatalog() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const catalog = document.getElementById('itemsCatalog');
+            
+            const filtered = ITEMS_DATA.filter(item => 
+                item.en.toLowerCase().includes(searchTerm) || 
+                item.pt.toLowerCase().includes(searchTerm)
+            );
+            
+            catalog.innerHTML = '';
+            
+            if (filtered.length === 0) {
+                catalog.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;">Nenhum item encontrado</div>';
+                return;
+            }
+            
+            filtered.forEach(item => {
+                const imagePath = getThumbPath(item.en);
+                const displayName = getItemDisplayName(item);
+                const div = document.createElement('div');
+                div.className = 'catalog-item';
+                div.innerHTML = `
+                    <div class="catalog-item-img">
+                        <img src="${imagePath}" alt="${displayName}"
+                             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect width=%22100%22 height=%22100%22 fill=%22%23334155%22/><text x=%2250%22 y=%2250%22 font-size=%2212%22 text-anchor=%22middle%22 fill=%22%23fff%22>?</text></svg>'">
+                    </div>
+                    <div class="catalog-item-name">${displayName}</div>
+                `;
+                div.addEventListener('click', () => selectItem(item));
+                catalog.appendChild(div);
+            });
+        }
+
+        function selectItem(item) {
+            pendingItem = item;
+            editingSlot = null;
+            const displayName = getItemDisplayName(item);
+            document.getElementById('quantityItemName').textContent = displayName;
+            document.getElementById('quantityInput').value = '';
+            document.getElementById('priceInput').value = '';
+            document.getElementById('currencySelect').value = 'BRL';
+            document.getElementById('blueprintCheckbox').checked = false;
+            closeModal();
+            document.getElementById('quantityModal').classList.add('active');
+            setTimeout(() => document.getElementById('quantityInput').focus(), 100);
+        }
+
+        function confirmQuantity() {
+            const quantity = document.getElementById('quantityInput').value.trim();
+            const price = document.getElementById('priceInput').value.trim();
+            const currency = document.getElementById('currencySelect').value;
+            const isBlueprint = document.getElementById('blueprintCheckbox').checked;
+            
+            if (pendingItem && selectedSlot !== null) {
+                items[selectedSlot] = {
+                    name: getItemFullName(pendingItem, isBlueprint),
+                    imagePath: getThumbPath(pendingItem.en),
+                    quantity: quantity,
+                    price: price,
+                    currency: currency,
+                    isBlueprint: isBlueprint,
+                    originalItem: pendingItem
+                };
+                updateGLSLPreview();
+                renderItems();
+            }
+            cancelQuantity();
+        }
+
+        function cancelQuantity() {
+            document.getElementById('quantityModal').classList.remove('active');
+            pendingItem = null;
+            selectedSlot = null;
+            editingSlot = null;
+        }
+
+let glslEnabled = true;
+
+async function updateGLSLPreview(){
+  const template = document.querySelector('.template');
+  const preview = document.getElementById('glslPreview');
+  if (!template || !preview) return;
+
+  // garante visibilidade por padrão
+  template.style.opacity = '1';
+  preview.style.display = 'none';
+
+  try {
+    // se você quer mesmo o preview ligado:
+    preview.style.display = 'block';
+    template.style.opacity = '0';
+
+    const snap = await html2canvas(template, {
+      backgroundColor: null,
+      scale: window.devicePixelRatio || 2,
+      useCORS: true,
+      logging: false,
+      ignoreElements: (el) => el && el.id === 'glslPreview'
+    });
+
+    const ok = glslSharpenToCanvas(snap, preview, { sharpen: 0.25, contrast: 1.03, saturation: 1.02 });
+
+    // se não conseguiu WebGL, volta pro DOM normal
+    if (!ok) {
+      preview.style.display = 'none';
+      template.style.opacity = '1';
+    }
+  } catch (e) {
+    console.warn('GLSL preview falhou:', e);
+    preview.style.display = 'none';
+    template.style.opacity = '1';
+  }
+}  
+    
+async function generateImage() {
+  const template = document.querySelector('.template');
+
+  const btn = document.querySelector('.generate-btn') || document.getElementById('generateBtn');
+  if (!btn) {
+    console.error('Botão não encontrado');
+    return;
+  }
+
+  const originalText = btn.textContent;
+  btn.textContent = '⏳ Gerando...';
+  btn.disabled = true;
+
+  // >>> TAMANHO FINAL IGUAL AO SEU PRINT (zoom 67%)
+  const EXPORT_W = 1200;
+  const EXPORT_H = 1200;
+
+  let clone = null;
+  let exportStyle = null;
+
+  try {
+    // 0) Garantir html2canvas carregado (evita "html2canvas is not defined")
+    if (!window.html2canvas) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Falha ao carregar html2canvas (CDN).'));
+        document.head.appendChild(script);
+      });
+    }
+
+    clone = template.cloneNode(true);
+    clone.style.position = 'absolute';
+    clone.style.left = '-99999px';
+    clone.style.top = '0';
+    clone.style.width = `${EXPORT_W}px`;
+    clone.style.height = `${EXPORT_H}px`;
+    clone.dataset.export = '1';
+    document.body.appendChild(clone);
+
+    exportStyle = document.createElement('style');
+    exportStyle.textContent = `
+  .template[data-export="1"]{
+    width: ${EXPORT_W}px !important;
+    height: ${EXPORT_H}px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .template[data-export="1"] #stockArea{
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .template[data-export="1"] .items-grid{
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: 100% !important;
+
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(5, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  /* Em 1200x1200 dá pra usar "quase quadrado" sem cortar:
+     aqui deixamos o slot preencher a célula e a imagem fica contida */
+  .template[data-export="1"] .item-slot{
+    aspect-ratio: unset !important;
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  /* borda só nos preenchidos (se você estiver usando isso) */
+  .template[data-export="1"] .item-slot.empty{ border: none !important; }
+  .template[data-export="1"] .item-slot:not(.empty){ border: 2px solid #334155 !important; }
+`;
+
+    document.head.appendChild(exportStyle);
+
+    const images = clone.querySelectorAll('img');
+    for (const img of images) {
+      if (img.src && !img.src.startsWith('data:')) {
+        try {
+          const base64 = await imageToBase64(img.src);
+          img.src = base64;
+        } catch (e) {
+          console.warn('Não foi possível converter imagem:', img.src);
+        }
+      }
+    }
+
+    await new Promise(r => setTimeout(r, 200));
+
+    const capturedCanvas = await html2canvas(clone, {
+      backgroundColor: '#0a0e1a',
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      logging: false,
+      width: EXPORT_W,
+      height: EXPORT_H
+    });
+
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = EXPORT_W;
+    finalCanvas.height = EXPORT_H;
+    const ctx = finalCanvas.getContext('2d');
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(capturedCanvas, 0, 0, EXPORT_W, EXPORT_H);
+
+   const glslCanvas = document.createElement('canvas');
+   const ok = glslSharpenToCanvas(finalCanvas, glslCanvas, { sharpen: 0.25, contrast: 1.03, saturation: 1.02 });
+
+   const dataURL = (ok ? glslCanvas : finalCanvas).toDataURL('image/png', 1.0);
+    const a = document.createElement('a');
+    a.href = dataURL;
+    a.download = 'arc-raiders-estoque.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+  } catch (err) {
+    console.error('Erro ao gerar imagem:', err);
+    alert('Erro ao gerar imagem: ' + err.message);
+  } finally {
+    if (clone) clone.remove();
+    if (exportStyle) exportStyle.remove();
+    btn.textContent = originalText;
+    btn.disabled = false;
+  }
+}
+        
+        // Função auxiliar para converter imagem para base64
+        function imageToBase64(url) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    try {
+                        resolve(canvas.toDataURL('image/png'));
+                    } catch (e) {
+                        reject(e);
+                    }
+                };
+                img.onerror = reject;
+                img.src = url;
+            });
+        }
+        
+        // Função auxiliar para converter imagem para base64
+        function imageToBase64(url) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    try {
+                        resolve(canvas.toDataURL('image/png'));
+                    } catch (e) {
+                        reject(e);
+                    }
+                };
+                img.onerror = reject;
+                img.src = url;
+            });
+        }
+        
+        // Função auxiliar para converter imagem para base64
+        function imageToBase64(url) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    try {
+                        resolve(canvas.toDataURL('image/png'));
+                    } catch (e) {
+                        reject(e);
+                    }
+                };
+                img.onerror = reject;
+                img.src = url;
+            });
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('itemModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+            const quantityModal = document.getElementById('quantityModal');
+            if (event.target === quantityModal) {
+                cancelQuantity();
+            }
+        }
+    
+    function getGL(canvas){
+  const opts = { premultipliedAlpha: true, preserveDrawingBuffer: true };
+  return (
+    canvas.getContext('webgl2', opts) ||
+    canvas.getContext('webgl', opts) ||
+    canvas.getContext('experimental-webgl', opts)
+  );
+}
+    
+    function glslSharpenToCanvas(srcCanvas, outCanvas, opts = {}) {
+  const sharpen = opts.sharpen ?? 0.25;   // 0.0 a 1.0
+  const contrast = opts.contrast ?? 1.03; // 1.0 = igual
+  const saturation = opts.saturation ?? 1.02;
+
+  const w = srcCanvas.width;
+  const h = srcCanvas.height;
+
+  outCanvas.width = w;
+  outCanvas.height = h;
+
+  const gl = getGL(outCanvas);
+
+if (!gl) {
+  const ctx2d = outCanvas.getContext('2d');
+  if (ctx2d) {
+    ctx2d.clearRect(0, 0, w, h);
+    ctx2d.drawImage(srcCanvas, 0, 0);
+  }
+  return false; 
+}
+
+  const vs = `
+    attribute vec2 a_pos;
+    varying vec2 v_uv;
+    void main(){
+      v_uv = (a_pos + 1.0) * 0.5;
+      gl_Position = vec4(a_pos, 0.0, 1.0);
+    }
+  `;
+
+  const fs = `
+    precision mediump float;
+    varying vec2 v_uv;
+    uniform sampler2D u_tex;
+    uniform vec2 u_texel;
+    uniform float u_sharpen;
+    uniform float u_contrast;
+    uniform float u_saturation;
+
+    vec3 sat(vec3 c, float s){
+      float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+      return mix(vec3(l), c, s);
+    }
+
+    void main(){
+      vec3 c  = texture2D(u_tex, v_uv).rgb;
+
+      // 4 taps (cross) p/ blur simples
+      vec3 n  = texture2D(u_tex, v_uv + vec2(0.0, -u_texel.y)).rgb;
+      vec3 s  = texture2D(u_tex, v_uv + vec2(0.0,  u_texel.y)).rgb;
+      vec3 e  = texture2D(u_tex, v_uv + vec2( u_texel.x, 0.0)).rgb;
+      vec3 w  = texture2D(u_tex, v_uv + vec2(-u_texel.x, 0.0)).rgb;
+      vec3 blur = (n + s + e + w) * 0.25;
+
+      // unsharp mask
+      vec3 sharp = c + (c - blur) * u_sharpen;
+
+      // contraste leve
+      sharp = (sharp - 0.5) * u_contrast + 0.5;
+
+      // saturação leve
+      sharp = sat(sharp, u_saturation);
+
+      gl_FragColor = vec4(clamp(sharp, 0.0, 1.0), 1.0);
+    }
+  `;
+
+  function compile(type, src){
+    const sh = gl.createShader(type);
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+      throw new Error(gl.getShaderInfoLog(sh) || 'Shader compile error');
+    }
+    return sh;
+  }
+
+  const prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+    throw new Error(gl.getProgramInfoLog(prog) || 'Program link error');
+  }
+  gl.useProgram(prog);
+
+  // quad
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,  1,-1, -1, 1,  1, 1]), gl.STATIC_DRAW);
+
+  const aPos = gl.getAttribLocation(prog, 'a_pos');
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+  // texture
+  const tex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, srcCanvas);
+
+  gl.uniform2f(gl.getUniformLocation(prog, 'u_texel'), 1.0 / w, 1.0 / h);
+  gl.uniform1f(gl.getUniformLocation(prog, 'u_sharpen'), sharpen);
+  gl.uniform1f(gl.getUniformLocation(prog, 'u_contrast'), contrast);
+  gl.uniform1f(gl.getUniformLocation(prog, 'u_saturation'), saturation);
+
+  gl.viewport(0, 0, w, h);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+    
+        init();
+    </script>
+</body>
+</html>

@@ -87,13 +87,21 @@
         }
 
         select {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid #475569;
-            border-radius: 0.375rem;
-            padding: 0.75rem 1rem;
-            color: white;
-            cursor: pointer;
-        }
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid #475569;
+        border-radius: 0.375rem;
+        padding: 0.75rem 3rem 0.75rem 1rem;  /* Ainda mais espaço à direita */
+        color: white;
+        cursor: pointer;
+        min-width: 150px;
+        appearance: none;  /* ADICIONE ESTA LINHA */
+        -webkit-appearance: none;  /* ADICIONE ESTA LINHA */
+        -moz-appearance: none;  /* ADICIONE ESTA LINHA */
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");  /* ADICIONE ESTA LINHA */
+        background-repeat: no-repeat;  /* ADICIONE ESTA LINHA */
+        background-position: right 1rem center;  /* ADICIONE ESTA LINHA - controla a posição da seta */
+        background-size: 1.25rem;  /* ADICIONE ESTA LINHA */
+    }
 
         select:focus {
             outline: none;
@@ -143,6 +151,31 @@
         transform: none;      
         display: block;
         }
+        
+        .copy-btn {
+        background: rgba(15, 23, 42, 0.5);
+        color: white;
+        border: 1px solid #475569;
+        border-radius: 0.375rem;
+        padding: 0.75rem 1.4rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+
+    .copy-btn:hover {
+        background: #0e7490;
+        transform: translateY(-2px);
+    }
+
+    .copy-btn:active {
+        transform: translateY(0);
+    }
+
+    .copy-btn.copied {
+        background: #16a34a;
+    }
 
         .shop-name {
             position: absolute;
@@ -155,6 +188,20 @@
             text-align: center;
             pointer-events: none;
         }
+        
+        .template-credit {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 100%;
+        margin-top: 0.5rem;
+        color: #94a3b8;
+        font-size: 0.875rem;
+        font-weight: 500;
+        letter-spacing: 0.025em;
+        text-align: center;
+        pointer-events: none;
+    }
 
         .stock-header {
             color: white;
@@ -608,6 +655,53 @@
         .quantity-btn-cancel:hover {
             background: rgba(30, 41, 59, 0.8);
         }
+        
+        .footer {
+        background: rgba(30, 41, 59, 0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid #334155;
+        border-radius: 0.5rem;
+        padding: 0.3rem;
+        margin-top: 1.5rem;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.875rem;
+    }
+
+    .footer-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .footer-name {
+        color: white;
+        font-weight: 600;
+    }
+
+    .discord-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #5865F2;
+        text-decoration: none;
+        transition: all 0.3s;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+    }
+
+    .discord-link:hover {
+        color: #4752C4;
+        background: rgba(88, 101, 242, 0.1);
+    }
+
+    .discord-icon {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+        
     </style>
 </head>
 <body>
@@ -621,6 +715,7 @@
                     <option value="en">English</option>
                 </select>
                 <button class="generate-btn" onclick="generateImage()">📸 Gerar Imagem</button>
+                <button class="copy-btn" onclick="copyItemsText()">📋 Copiar Lista</button>
             </div>
         </div>
 
@@ -632,6 +727,7 @@
                 </div>
                 <div>
                     <div class="shop-name" id="displayShopName">LOJA DO JOGADOR</div>
+                    <div class="template-credit">Template feito em: https://arctemplategenerator.vercel.app</div>
                 </div>
                 <div></div>
             </div>
@@ -646,6 +742,18 @@
             <strong>Como usar:</strong> Clique nos slots vazios para adicionar itens do catálogo. 
             Clique em um item já adicionado para removê-lo. Clique no botão "Gerar Imagem" para baixar seu estoque como PNG!
         </div>
+        
+        <div class="footer">
+    <div class="footer-content">
+        <span>Desenvolvido com carinho para os jogadores por: <span class="footer-name">Lucas Apolinário</span></span>
+        <span>•</span>
+        <a href="https://discord.com/users/lucasapolinario" target="_blank" class="discord-link">
+            <img src="discord-logo.png" alt="Discord" class="discord-icon">
+            lucasapolinario
+        </a>
+    </div>
+</div>
+        
     </div>
 
     <div class="modal" id="itemModal">
@@ -686,6 +794,7 @@
                     <option value="BRL">BRL</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
+                    <option value="Seeds" id="seedsOption">Sementes</option>
                 </select>
             </div>
             
@@ -720,8 +829,8 @@
     { en: "Venator Blueprint", pt: "Esquema de Venator" },
     { en: "Il Toro Blueprint", pt: "Esquema de Il Toro" },
     { en: "Vulcano Blueprint", pt: "Esquema de Vulcano" },
-    { en: "Tempest Blueprint", pt: "Esquema de Tempest" },
-    { en: "Bobcat Blueprint", pt: "Esquema de Bobcat" },
+    { en: "Tempest Blueprint", pt: "Esquema de Tempestade" },
+    { en: "Bobcat Blueprint", pt: "Esquema de Lince" },
     { en: "Osprey Blueprint", pt: "Esquema de Águia Pescadora" },
     { en: "Burletta Blueprint", pt: "Esquema de Burletta" },
     { en: "Hullcracker Blueprint", pt: "Esquema de Quebra-Casco" },
@@ -776,7 +885,8 @@
     { en: "Extended Medium Mag II Blueprint", pt: "Esquema de Carregador Médio Estendido II" },
     { en: "Extended Medium Mag III Blueprint", pt: "Esquema de Carregador Médio Estendido III" },
     { en: "Extended Shotgun Mag II Blueprint", pt: "Esquema de Carregador de Escopeta Estendido II" },
-    { en: "Extended Shotgun Mag III Blueprint", pt: "Esquema de Carregador de Escopeta Estendido III" }
+    { en: "Extended Shotgun Mag III Blueprint", pt: "Esquema de Carregador de Escopeta Estendido III" },
+    { en: "Assorted Seeds", pt: "Sementes Sortidas" }
         ];
 
         let items = Array(20).fill(null);
@@ -784,6 +894,61 @@
         let currentLanguage = 'pt';
         let pendingItem = null;
         let editingSlot = null;
+    
+        const translations = {
+    pt: {
+        title: "Arc Raiders - Gerador de Template de Vendas",
+        shopNamePlaceholder: "NOME DA SUA LOJA...",
+        defaultShopName: "LOJA DO JOGADOR",
+        generateButton: "📸 Gerar Imagem",
+        generating: "⏳ Gerando...",
+        stockHeader: "ESTOQUE",
+        addItem: "Adicionar",
+        helpTitle: "Como usar:",
+        helpText: "Clique nos slots vazios para adicionar itens do catálogo. Clique em um item já adicionado para removê-lo. Clique no botão \"Gerar Imagem\" para baixar seu estoque como PNG!",
+        selectItem: "SELECIONAR ITEM",
+        searchPlaceholder: "Buscar item...",
+        noItems: "Nenhum item encontrado",
+        configureItem: "Configurar Item",
+        quantityPlaceholder: "Quantidade (opcional)",
+        pricePlaceholder: "Preço (opcional)",
+        blueprint: "Blueprint",
+        cancel: "Cancelar",
+        confirm: "Confirmar",
+        developedBy: "Desenvolvido com carinho para os jogadores por:",
+        layoutCredit: "Layout feito em: www.arctemplategenerator.vercel.app",
+        copyButton: "📋 Copiar Lista",
+        copied: "✅ Copiado!",
+        noItems: "❌ Sem itens",
+        copyError: "❌ Erro"
+    },
+    en: {
+        title: "Arc Raiders - Sales Template Generator",
+        shopNamePlaceholder: "YOUR SHOP NAME...",
+        defaultShopName: "PLAYER SHOP",
+        generateButton: "📸 Generate Image",
+        generating: "⏳ Generating...",
+        stockHeader: "STOCK",
+        addItem: "Add Item",
+        helpTitle: "How to use:",
+        helpText: "Click on empty slots to add items from the catalog. Click on an already added item to remove it. Click the \"Generate Image\" button to download your stock as PNG!",
+        selectItem: "SELECT ITEM",
+        searchPlaceholder: "Search item...",
+        noItems: "No items found",
+        configureItem: "Configure Item",
+        quantityPlaceholder: "Quantity (optional)",
+        pricePlaceholder: "Price (optional)",
+        blueprint: "Blueprint",
+        cancel: "Cancel",
+        confirm: "Confirm",
+        developedBy: "Developed with care for the players by:",
+        layoutCredit: "Layout created at: www.arctemplategenerator.vercel.app",
+        copyButton: "📋 Copy List",
+        copied: "✅ Copied!",
+        noItems: "❌ No items",
+        copyError: "❌ Error"
+    }
+};
 
         function init() {
             renderItems();
@@ -794,6 +959,8 @@
             document.getElementById('quantityInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') confirmQuantity();
             });
+            updateCurrencyLabels();
+            updatePageTexts();
         }
 
         function getItemDisplayName(item) {
@@ -826,10 +993,79 @@
         }
 
         function updateLanguage(e) {
-            currentLanguage = e.target.value;
-            renderItems();
-            filterCatalog();
+        currentLanguage = e.target.value;
+        updateCurrencyLabels();
+        updatePageTexts();
+        renderItems();
+        filterCatalog();
         }
+    
+        function updateCurrencyLabels() {
+            const seedsOption = document.getElementById('seedsOption');
+            if (seedsOption) {
+            seedsOption.textContent = currentLanguage === 'pt' ? 'Sementes' : 'Seeds';
+            }
+        }
+    
+        function updatePageTexts() {
+    const t = translations[currentLanguage];
+    
+    // Título da página
+    document.querySelector('.editor-panel h1').textContent = t.title;
+    
+    // Input do nome da loja
+    const shopInput = document.getElementById('shopName');
+    shopInput.placeholder = t.shopNamePlaceholder;
+    if (shopInput.value === translations.pt.defaultShopName || shopInput.value === translations.en.defaultShopName || shopInput.value === '') {
+        shopInput.value = t.defaultShopName;
+        document.getElementById('displayShopName').textContent = t.defaultShopName;
+    }
+    
+    // Botão gerar
+    const generateBtn = document.querySelector('.generate-btn');
+    if (!generateBtn.disabled) {
+        generateBtn.textContent = t.generateButton;
+    }
+            
+    // Botão copiar
+    const copyBtn = document.querySelector('.copy-btn');
+    if (copyBtn && !copyBtn.classList.contains('copied')) {
+        copyBtn.textContent = t.copyButton;
+    }        
+    
+    // Texto de ajuda
+    const helpText = document.querySelector('.help-text');
+    helpText.innerHTML = `<strong>${t.helpTitle}</strong> ${t.helpText}`;
+    
+    // Modal de seleção
+    document.querySelector('.modal-header h3').textContent = t.selectItem;
+    document.getElementById('searchInput').placeholder = t.searchPlaceholder;
+    
+    // Modal de quantidade
+    document.querySelector('.quantity-modal h3').textContent = t.configureItem;
+    document.getElementById('quantityInput').placeholder = t.quantityPlaceholder;
+    document.getElementById('priceInput').placeholder = t.pricePlaceholder;
+    document.querySelector('.blueprint-checkbox label').textContent = t.blueprint;
+    document.querySelector('.quantity-btn-cancel').textContent = t.cancel;
+    document.querySelector('.quantity-btn-confirm').textContent = t.confirm;
+    
+    // Footer
+   const footerContent = document.querySelector('.footer-content');
+            if (footerContent) {
+                footerContent.innerHTML = `
+            <span>${t.developedBy} <span class="footer-name">Lucas Apolinário</span></span>
+            <span>•</span>
+            <a href="https://discord.com/users/lucasapolinario" target="_blank" class="discord-link">
+                <img src="discord-logo.png" alt="Discord" class="discord-icon">
+                lucasapolinario
+            </a>
+        `;
+    }
+    
+    // Crédito do template
+    document.querySelector('.template-credit').textContent = t.layoutCredit;
+}
+    
     
         function syncGLSLPreviewSize(){
           const template = document.querySelector('.template');
@@ -845,7 +1081,14 @@
           canvas.height = Math.round(r.height * dpr);
         }
         window.addEventListener("resize", () => requestAnimationFrame(syncGLSLPreviewSize));
-
+        
+        function getCurrencyLabel(currency) {
+        if (currency === 'Seeds') {
+        return currentLanguage === 'pt' ? 'Sementes' : 'Seeds';
+        }
+        return currency;
+}
+    
         function renderItems() {
             const grid = document.getElementById('itemsGrid');
             grid.innerHTML = '';
@@ -858,7 +1101,7 @@
                 }
                 
                 if (item) {
-                    const priceHTML = item.price ? `<div class="item-price">${item.currency} ${item.price}</div>` : '';
+                    const priceHTML = item.price ? `<div class="item-price">${getCurrencyLabel(item.currency)} ${item.price}</div>` : '';
                     const quantityHTML = item.quantity ? `<div class="item-quantity">${item.quantity}</div>` : '';
                     
                     slot.innerHTML = `
@@ -893,15 +1136,16 @@
                     
                     slot.addEventListener('click', () => removeItem(index));
                 } else {
-                    slot.classList.add('empty');
-                    slot.innerHTML = `
-                        <svg viewBox="0 0 24 24">
-                            <path d="M12 4v16m8-8H4"/>
-                        </svg>
-                        <span>Adicionar</span>
-                    `;
-                    slot.addEventListener('click', () => openModal(index));
-                }
+                slot.classList.add('empty');
+                const t = translations[currentLanguage];
+                slot.innerHTML = `
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span>${t.addItem}</span>
+                `;
+                slot.addEventListener('click', () => openModal(index));
+            }
                 
                 grid.appendChild(slot);
             });
@@ -911,9 +1155,10 @@
         }
 
         function updateStockCount() {
-            const count = items.filter(item => item !== null).length;
-            document.getElementById('stockHeader').textContent = `ESTOQUE ${count}/20`;
-        }
+        const count = items.filter(item => item !== null).length;
+        const t = translations[currentLanguage];
+        document.getElementById('stockHeader').textContent = `${t.stockHeader} ${count}/20`;
+    }
 
         function removeItem(index) {
             items[index] = null;
@@ -962,22 +1207,35 @@
             );
         }
         
+    
+        function normalizeText(text) {
+            return text
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^\w\s]/g, '');
+}    
+    
         function filterCatalog() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const searchTerm = document.getElementById('searchInput').value;
+            const normalizedSearch = normalizeText(searchTerm);
             const catalog = document.getElementById('itemsCatalog');
-            
-            const filtered = ITEMS_DATA.filter(item => 
-                item.en.toLowerCase().includes(searchTerm) || 
-                item.pt.toLowerCase().includes(searchTerm)
-            );
-            
+
+            const filtered = ITEMS_DATA.filter(item => {
+                const normalizedPt = normalizeText(item.pt);
+                const normalizedEn = normalizeText(item.en);
+
+                return normalizedPt.includes(normalizedSearch) || 
+                       normalizedEn.includes(normalizedSearch);
+            });
+
             catalog.innerHTML = '';
-            
+
             if (filtered.length === 0) {
                 catalog.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;">Nenhum item encontrado</div>';
                 return;
             }
-            
+
             filtered.forEach(item => {
                 const imagePath = getThumbPath(item.en);
                 const displayName = getItemDisplayName(item);
@@ -1074,7 +1332,56 @@ async function updateGLSLPreview(){
     preview.style.display = 'none';
     template.style.opacity = '1';
   }
-}  
+}
+    
+async function copyItemsText() {
+        const btn = document.querySelector('.copy-btn');
+        const originalText = btn.textContent;
+
+        const filledItems = items.filter(item => item !== null);
+
+        if (filledItems.length === 0) {
+            btn.textContent = '❌ Sem itens';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+            return;
+        }
+
+        let textList = '';
+
+        filledItems.forEach(item => {
+            let line = item.name;
+
+            if (item.quantity) {
+                line += ` | Quantidade: ${item.quantity}`;
+            }
+
+            if (item.price) {
+                line += ` | Valor: ${item.currency} ${item.price}`;
+            }
+
+            line += ' |\n';
+            textList += line;
+        });
+
+        try {
+            await navigator.clipboard.writeText(textList);
+            btn.textContent = '✅ Copiado!';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.classList.remove('copied');
+            }, 2000);
+        } catch (err) {
+            console.error('Erro ao copiar:', err);
+            btn.textContent = '❌ Erro';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+        }
+    }    
+    
     
 async function generateImage() {
   const template = document.querySelector('.template');
